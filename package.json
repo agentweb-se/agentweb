@@ -1,0 +1,15 @@
+{
+  "name": "agentweb-io",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev:api": "cd api && npm run dev",
+    "dev:web": "cd web && npm run dev",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "lint": "cd web && npx next lint",
+    "test": "cd api && npx vitest run",
+    "test:e2e": "cd api && npx tsx ../tests/agentweb-e2e.ts",
+    "hooks:install": "bash scripts/install-hooks.sh"
+  }
+}

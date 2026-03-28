@@ -1,0 +1,24 @@
+{
+  "name": "@agentweb-se/agentweb",
+  "version": "0.2.3",
+  "description": "Turn any website into an operating manual for AI agents",
+  "license": "GPL-3.0",
+  "bin": {
+    "agentweb": "./bin/agentweb.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentweb-se/agentweb.git"
+  },
+  "homepage": "https://agentweb.se",
+  "keywords": [
+    "ai",
+    "agents",
+    "agents-json",
+    "web-automation",
+    "ai-agents"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}

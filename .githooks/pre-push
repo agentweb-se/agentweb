@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Detect WSL — test needs the Docker container running.
+# Run lint only from WSL. Full verify runs from Windows or CI.
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  echo "[pre-push] WSL detected — running lint only"
+  npm run lint
+else
+  echo "[pre-push] Running full quality gate (lint + test)..."
+  npm run lint && npm run test
+fi

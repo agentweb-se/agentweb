@@ -1,0 +1,343 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 17%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 20%;
+    --card-foreground: 0 0% 96%;
+    --primary: 25 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 22%;
+    --secondary-foreground: 0 0% 80%;
+    --muted: 0 0% 22%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 0 0% 25%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 27%;
+    --input: 0 0% 27%;
+    --ring: 25 100% 50%;
+    --radius: 0.625rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .font-mono {
+    font-family: var(--font-cascadia-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  ::selection {
+    background: hsl(25 100% 50% / 0.25);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #2B2B2B; }
+  ::-webkit-scrollbar-thumb { background: #5A5A5A; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #6A6A6A; }
+}
+
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 0.4s ease-out both;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in-fast {
+    animation: fadeIn 0.2s ease-out both;
+  }
+
+  .slide-up {
+    animation: slideUp 0.5s ease-out both;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .pulse-live {
+    animation: pulseLive 2s ease-in-out infinite;
+  }
+  @keyframes pulseLive {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .glow-pulse {
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.05); }
+  }
+
+  .grid-pattern {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+
+  .text-gradient-brand {
+    background: linear-gradient(135deg, #FF6B00, #FF8A33, #FFB366);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Spinning conic border glow for the hero input */
+  .input-glow-wrap {
+    position: relative;
+    border-radius: 1rem;
+    padding: 1px;
+    background: #333;
+    isolation: isolate;
+  }
+  .input-glow-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 1rem;
+    background: conic-gradient(
+      from var(--glow-angle, 0deg),
+      transparent 0%,
+      transparent 30%,
+      rgba(255, 107, 0, 0.5) 45%,
+      rgba(255, 140, 50, 0.3) 50%,
+      rgba(255, 107, 0, 0.5) 55%,
+      transparent 70%,
+      transparent 100%
+    );
+    animation: spinGlow 4s linear infinite;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .input-glow-wrap:focus-within::before,
+  .input-glow-wrap:hover::before {
+    opacity: 1;
+  }
+  @keyframes spinGlow {
+    from { --glow-angle: 0deg; }
+    to { --glow-angle: 360deg; }
+  }
+  @property --glow-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  /* Scroll-triggered reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ═══════ Terminal cursor ═══════ */
+  @keyframes terminalBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @keyframes sendClick {
+    0% { transform: scale(1); }
+    15% { transform: scale(0.75); }
+    40% { transform: scale(1.15); }
+    60% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+
+  /* Custom scrollbar for demo panels */
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #5A5A5A; border-radius: 2px; }
+
+  /* ═══════ Scroll-snap fullpage ═══════ */
+  .snap-container {
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .snap-container::-webkit-scrollbar { display: none; }
+
+  .snap-section {
+    height: 100vh;
+    height: 100dvh;
+    scroll-snap-align: start;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* ═══════ Page dot navigation ═══════ */
+  .page-dots {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .page-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 107, 0, 0.25);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .page-dot:hover {
+    background: rgba(255, 107, 0, 0.5);
+  }
+  .page-dot.active {
+    width: 10px;
+    height: 10px;
+    background: #FF6B00;
+    box-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
+  }
+  .page-dot-arrow {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgba(255, 107, 0, 0.35);
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color 0.3s;
+  }
+  .page-dot-arrow:hover {
+    color: #FF6B00;
+  }
+
+  /* ═══════ Demo URL bar ═══════ */
+  .demo-url-bar {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 107, 0, 0.04);
+    border: 1px solid rgba(255, 107, 0, 0.15);
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .demo-url-bar:hover {
+    border-color: rgba(255, 107, 0, 0.7);
+    background: rgba(255, 107, 0, 0.15);
+    color: #fff;
+  }
+  .demo-url-bar.active {
+    border-color: rgba(255, 107, 0, 0.5);
+    background: rgba(255, 107, 0, 0.08);
+  }
+
+  /* ═══════ Status badge pop-in animations ═══════ */
+  .badge-pop-success {
+    animation: badgePopSuccess 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes badgePopSuccess {
+    0% { opacity: 0; transform: scale(0.5) translateY(4px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .badge-pop-error {
+    animation: badgePopError 0.4s ease-out both;
+  }
+  @keyframes badgePopError {
+    0% { opacity: 0; transform: translateX(0); }
+    15% { opacity: 1; transform: translateX(-4px); }
+    30% { transform: translateX(3px); }
+    45% { transform: translateX(-2px); }
+    60% { transform: translateX(1px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ═══════ News ticker scroll ═══════ */
+  @keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ═══════ Timer pulse animation ═══════ */
+  .timer-animate {
+    animation: timerPulse 0.6s ease-out;
+  }
+  @keyframes timerPulse {
+    0% { opacity: 0.3; transform: scale(0.95); }
+    50% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+}
+
+/* ═══════ Mobile + short viewport: continuous scroll, no snap ═══════ */
+/* Outside @layer so these override utility-layer styles reliably */
+@media (max-width: 767px), (max-height: 600px) {
+  .snap-container {
+    scroll-snap-type: none !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+  .snap-section {
+    height: auto !important;
+    min-height: auto !important;
+    scroll-snap-align: none !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+  .page-dots { display: none !important; }
+}
+
+/* ═══════ Mobile: disable entrance animations ═══════ */
+@media (max-width: 767px) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .fade-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -1,0 +1,57 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+coverage/
+
+# next.js
+.next/
+out/
+
+# production
+build/
+dist/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env.production
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# database
+*.db
+*.db-shm
+*.db-wal
+
+# local reference (not for repo)
+LOCAL_HUMAN.md
+
+# pipeline outputs and logs
+output/
+logs/
+
+# demo videos (too large for git)
+web/public/demos/
+
+# claude code workspace (internal agent config)
+.claude/
+
+# local reference
+LOCAL_HUMAN.md

@@ -1,0 +1,17 @@
+name: agentweb
+
+services:
+  api:
+    container_name: agentweb-api
+    build:
+      context: ../api
+      dockerfile: ../docker/Dockerfile
+    ports:
+      - "4001:4001"
+    volumes:
+      - ../output:/app/output
+    env_file:
+      - ../.env.local
+    environment:
+      - NODE_ENV=development
+      - OUTPUT_DIR=/app/output
