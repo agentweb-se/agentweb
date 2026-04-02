@@ -8,13 +8,8 @@ import {
   Search,
   Globe,
   Navigation,
-  ShoppingBag,
   FileText,
   Download,
-  Lock,
-  MapPin,
-  Video,
-  Calendar,
   MessageSquare,
   ClipboardList,
   CheckCircle2,
@@ -35,12 +30,6 @@ const CAPABILITY_ICONS: Record<string, React.ElementType> = {
   search: Search,
   forms: ClipboardList,
   content_pages: FileText,
-  listings: ShoppingBag,
-  downloads: Download,
-  auth: Lock,
-  location: MapPin,
-  media_feeds: Video,
-  scheduling: Calendar,
 };
 
 const ALL_CAPABILITIES = [
@@ -48,12 +37,6 @@ const ALL_CAPABILITIES = [
   "search",
   "forms",
   "content_pages",
-  "listings",
-  "downloads",
-  "auth",
-  "location",
-  "media_feeds",
-  "scheduling",
 ];
 
 function StatusBadge({ status }: { status: string }) {
@@ -148,7 +131,7 @@ function CapabilityCard({
     <div
       className={`rounded-lg border p-3 fade-in ${
         status === "not_found"
-          ? "border-[#444444] bg-[#2D2D2D] opacity-60"
+          ? "border-white/[0.08] bg-[#0e1018] opacity-60"
           : isPower
             ? "border-amber-500/30 bg-amber-500/5"
             : status === "verified"
@@ -172,7 +155,7 @@ function CapabilityCard({
         </div>
       )}
       {endpoint && (
-        <div className="mt-2 text-[10px] font-mono text-emerald-400 bg-[#2B2B2B] rounded px-2 py-1 border border-[#3F3F3F]">
+        <div className="mt-2 text-[10px] font-mono text-emerald-400 bg-[#0a0c12] rounded px-2 py-1 border border-white/[0.06]">
           {endpoint.method} {endpoint.url}
           {endpoint.params && ` ?${endpoint.params.join("&")}`}
         </div>
@@ -189,7 +172,7 @@ function InstructionCard({
   data: Record<string, unknown>;
 }) {
   return (
-    <div className="rounded-lg border border-[#444444] bg-[#2D2D2D] p-3 fade-in">
+    <div className="rounded-lg border border-white/[0.08] bg-[#0e1018] p-3 fade-in">
       <div className="flex items-center gap-2 mb-2">
         <MessageSquare className="w-3.5 h-3.5 text-brand" />
         <span className="text-xs font-medium text-neutral-200 capitalize">
@@ -197,7 +180,7 @@ function InstructionCard({
         </span>
       </div>
       {data.how ? (
-        <div className="text-[11px] font-mono text-brand-light bg-[#2B2B2B] rounded px-2 py-1 border border-[#3F3F3F] mb-2">
+        <div className="text-[11px] font-mono text-brand-light bg-[#0a0c12] rounded px-2 py-1 border border-white/[0.06] mb-2">
           {data.how as string}
         </div>
       ) : null}
@@ -240,32 +223,67 @@ function InstructionCard({
   );
 }
 
-function PresentationCard({ data }: { data: Record<string, unknown> }) {
+function PresentationCard({ data, voice, productDisplay, responseStyle }: {
+  data: Record<string, unknown>;
+  voice?: string;
+  productDisplay?: Record<string, unknown>;
+  responseStyle?: Record<string, unknown>;
+}) {
   const rules = (data.rules as string[]) || [];
   return (
-    <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 fade-in">
-      <div className="flex items-center gap-2 mb-2">
-        <ClipboardList className="w-3.5 h-3.5 text-violet-400" />
-        <span className="text-xs font-medium text-neutral-200">
-          Presentation Rules
-        </span>
+    <div className="space-y-2">
+      <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 fade-in">
+        <div className="flex items-center gap-2 mb-2">
+          <ClipboardList className="w-3.5 h-3.5 text-violet-400" />
+          <span className="text-xs font-medium text-neutral-200">
+            Presentation Rules
+          </span>
+        </div>
+        {data.currency ? (
+          <div className="text-[11px] text-neutral-400 mb-1">
+            Currency: <span className="text-violet-300">{data.currency as string}</span>
+          </div>
+        ) : null}
+        {data.language_note ? (
+          <div className="text-[11px] text-neutral-300 mb-2">
+            {data.language_note as string}
+          </div>
+        ) : null}
+        {rules.length > 0 && (
+          <ul className="text-[11px] text-neutral-400 space-y-0.5 ml-3 list-disc">
+            {rules.map((r, i) => (
+              <li key={i}>{r}</li>
+            ))}
+          </ul>
+        )}
       </div>
-      {data.currency ? (
-        <div className="text-[11px] text-neutral-400 mb-1">
-          Currency: <span className="text-violet-300">{data.currency as string}</span>
+      {voice && (
+        <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 fade-in">
+          <div className="text-[10px] font-medium text-violet-400 uppercase tracking-wide mb-1">Brand Voice</div>
+          <div className="text-[11px] text-neutral-300 leading-relaxed">{voice}</div>
         </div>
-      ) : null}
-      {data.language_note ? (
-        <div className="text-[11px] text-neutral-300 mb-2">
-          {data.language_note as string}
+      )}
+      {productDisplay && (
+        <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 fade-in">
+          <div className="text-[10px] font-medium text-violet-400 uppercase tracking-wide mb-1">Product Display</div>
+          {productDisplay.card_template && (
+            <pre className="text-[10px] text-neutral-400 font-mono bg-[#0a0c12] rounded px-2 py-1 mb-1.5 whitespace-pre-wrap border border-white/[0.06]">{productDisplay.card_template as string}</pre>
+          )}
+          {productDisplay.image_source && (
+            <div className="text-[10px] text-neutral-500 leading-relaxed">{productDisplay.image_source as string}</div>
+          )}
         </div>
-      ) : null}
-      {rules.length > 0 && (
-        <ul className="text-[11px] text-neutral-400 space-y-0.5 ml-3 list-disc">
-          {rules.map((r, i) => (
-            <li key={i}>{r}</li>
-          ))}
-        </ul>
+      )}
+      {responseStyle && (
+        <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 fade-in">
+          <div className="text-[10px] font-medium text-violet-400 uppercase tracking-wide mb-1">Response Style</div>
+          {responseStyle.found_results && (
+            <div className="text-[10px] text-neutral-400 mb-1"><span className="text-neutral-500">Results:</span> {responseStyle.found_results as string}</div>
+          )}
+          {responseStyle.no_results && (
+            <div className="text-[10px] text-neutral-400"><span className="text-neutral-500">No results:</span> {responseStyle.no_results as string}</div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -316,6 +334,9 @@ function CardView({
   // Extract sections by path
   const site = sections.find((s) => s.section === "site");
   const presentation = sections.find((s) => s.section === "presentation");
+  const presVoice = sections.find((s) => s.section === "presentation.voice");
+  const presProductDisplay = sections.find((s) => s.section === "presentation.product_display");
+  const presResponseStyle = sections.find((s) => s.section === "presentation.response_style");
   const pages = sections.find((s) => s.section === "pages");
 
   const instructions = sections.filter((s) =>
@@ -346,10 +367,13 @@ function CardView({
         </div>
       )}
 
-      {/* Presentation */}
-      {presentation && (
+      {/* Presentation + Experience */}
+      {(presentation || presVoice || presProductDisplay || presResponseStyle) && (
         <PresentationCard
-          data={presentation.data as Record<string, unknown>}
+          data={(presentation?.data as Record<string, unknown>) || {}}
+          voice={presVoice?.data as string | undefined}
+          productDisplay={presProductDisplay?.data as Record<string, unknown> | undefined}
+          responseStyle={presResponseStyle?.data as Record<string, unknown> | undefined}
         />
       )}
 
@@ -375,7 +399,7 @@ function CardView({
           ).map((c) => (
             <div
               key={c}
-              className="rounded-lg border border-[#3F3F3F] bg-[#2C2C2C] p-3 opacity-30"
+              className="rounded-lg border border-white/[0.06] bg-[#0e1018] p-3 opacity-30"
             >
               <div className="flex items-center gap-2">
                 {React.createElement(CAPABILITY_ICONS[c] || FileText, {
@@ -426,19 +450,19 @@ export function AgentDocPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#444444]">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.08]">
         <FileJson className="w-4 h-4 text-emerald-400" />
         <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wide">
           API Document
         </span>
         <div className="ml-auto flex items-center gap-2">
           {/* View mode toggle — JSON tab dev only */}
-          <div className="flex rounded-md border border-[#505050] overflow-hidden">
+          <div className="flex rounded-md border border-[white/[0.1]] overflow-hidden">
             <button
               onClick={() => setViewMode("card")}
               className={`px-2 py-1 text-[10px] font-medium transition-colors ${
                 viewMode === "card"
-                  ? "bg-[#3F3F3F] text-neutral-200"
+                  ? "bg-white/[0.04] text-neutral-200"
                   : "text-neutral-600 hover:text-neutral-400"
               }`}
             >
@@ -450,7 +474,7 @@ export function AgentDocPanel({
                 onClick={() => setViewMode("json")}
                 className={`px-2 py-1 text-[10px] font-medium transition-colors ${
                   viewMode === "json"
-                    ? "bg-[#3F3F3F] text-neutral-200"
+                    ? "bg-white/[0.04] text-neutral-200"
                     : "text-neutral-600 hover:text-neutral-400"
                 }`}
               >

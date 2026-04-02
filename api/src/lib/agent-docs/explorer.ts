@@ -2,7 +2,7 @@
  * Explorer Orchestrator — manifesto first, then all discovery agents in parallel.
  *
  * Phase 1: Manifesto Agent — understand the site, document identity + structure
- * Phase 2-5 (parallel): Search, Browse, Forms, Contact — each independent
+ * Phase 2-6 (parallel): Search, Browse, Forms, Contact, Experience — each independent
  *
  * Each agent has its own prompt, assessment, retry loop, and browser session.
  * Shared state: doc (agents.json — different keys per agent), limits (metrics only).
@@ -30,6 +30,8 @@ import {
   buildFormsRetryPrompt,
   buildContactPrompt,
   buildContactRetryPrompt,
+  buildExperiencePrompt,
+  buildExperienceRetryPrompt,
 } from "./prompts";
 import {
   AgentsJson,
@@ -45,6 +47,7 @@ import {
   assessBrowseQuality,
   assessFormsQuality,
   assessContactQuality,
+  assessExperienceQuality,
   assignCapabilityPriorities,
   getCapabilityStatus,
   autoFillBehavior,
@@ -360,6 +363,7 @@ export async function startExplorer(
   const browseBrowserSession = d.createBrowserSession(getBrowser, domain, limits);
   const formsBrowserSession = d.createBrowserSession(getBrowser, domain, limits);
   const contactBrowserSession = d.createBrowserSession(getBrowser, domain, limits);
+  const experienceBrowserSession = d.createBrowserSession(getBrowser, domain, limits);
 
   // --- Search Phase Runner ---
   async function runSearchPhase(): Promise<{ status: "verified" | "not_found" | "found" | "missing"; retries: number }> {
@@ -588,20 +592,79 @@ export async function startExplorer(
     return { verified: assessContactQuality(doc).length === 0, retries: contactRetries };
   }
 
-  // Run all 4 discovery agents in parallel
-  const [searchResult, browseResult, formsResult, contactResult] = await Promise.all([
+  // --- Experience Phase Runner ---
+  async function runExperiencePhase(): Promise<{ verified: boolean; retries: number }> {
+    const log = logger.forPhase("experience");
+    const onEvent = createEventHandler(log, send, tokens);
+    send({ type: "explorer:phase", phase: "experience", message: "Analyzing brand voice & product display..." });
+
+    const experienceExecutor = makeScopedExecutorForSession(experienceBrowserSession, log, ["presentation.voice", "presentation.product_display", "presentation.response_style"]);
+    const experienceConfig: AgentConfig = {
+      side: "explorer",
+      model: modelFor("experience"),
+      systemPrompt: buildExperiencePrompt(url, siteInfo),
+      tools: EXPLORER_TOOLS,
+      executeTool: experienceExecutor,
+      maxTurns: d.maxExplorerTurns,
+      onEvent,
+    };
+
+    try {
+      await d.runAgentLoop(experienceConfig, `Analyze the brand voice, product images, and presentation style for ${siteInfo.name} (${url}).`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log.logStep("experience_error", { error: msg });
+      send({ type: "explorer:error", phase: "experience", error: msg });
+    }
+
+    let experienceRetries = 0;
+    while (!isWallTimeExceeded()) {
+      const failures = assessExperienceQuality(doc);
+      log.logAssessment("experience_quality", failures.length === 0, failures);
+      if (failures.length === 0) break;
+
+      experienceRetries++;
+      if (experienceRetries > MAX_PHASE_RETRIES) break;
+      log.setPhase(`experience-retry-${experienceRetries}`);
+      log.logStep("experience_retry_start", { attempt: experienceRetries, failures });
+      send({ type: "explorer:experience-retry", attempt: experienceRetries, failures });
+
+      try {
+        await d.runAgentLoop(
+          experienceConfig,
+          buildExperienceRetryPrompt(failures, {
+            voice: (doc.presentation as Record<string, unknown>)?.voice,
+            product_display: (doc.presentation as Record<string, unknown>)?.product_display,
+            response_style: (doc.presentation as Record<string, unknown>)?.response_style,
+          }),
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        log.logStep("experience_retry_error", { error: msg });
+        send({ type: "explorer:error", phase: "experience", error: msg });
+      }
+    }
+
+    await experienceBrowserSession.close();
+    return { verified: assessExperienceQuality(doc).length === 0, retries: experienceRetries };
+  }
+
+  // Run all 5 discovery agents in parallel
+  const [searchResult, browseResult, formsResult, contactResult, experienceResult] = await Promise.all([
     runSearchPhase(),
     runBrowsePhase(),
     runFormsPhase(),
     runContactPhase(),
+    runExperiencePhase(),
   ]);
 
   const searchRetries = searchResult.retries;
   const browseRetries = browseResult.retries;
   const formsRetries = formsResult.retries;
   const contactRetries = contactResult.retries;
+  const experienceRetries = experienceResult.retries;
 
-  console.log(`[explorer] All phases complete. search=${searchResult.status} browse=${browseResult.verified} forms=${formsResult.status} contact=${contactResult.verified}`);
+  console.log(`[explorer] All phases complete. search=${searchResult.status} browse=${browseResult.verified} forms=${formsResult.status} contact=${contactResult.verified} experience=${experienceResult.verified}`);
 
   // Post-parallel fixup: if search verified AND browse has when_to_use without search mention, add it
   if (searchResult.status === "verified" && browseResult.verified) {
@@ -705,6 +768,7 @@ export async function startExplorer(
   const formsStatus = getCapabilityStatus(doc, "forms");
   const formsVerified = formsStatus === "verified";
   const contactPass = assessContactQuality(doc).length === 0;
+  const experiencePass = assessExperienceQuality(doc).length === 0;
   const manifestoPass = assessManifestoQuality(doc).length === 0;
   const wallTimeMs = d.now() - startTime;
 
@@ -730,6 +794,7 @@ export async function startExplorer(
       browse: { verified: browsePass, retries: browseRetries },
       forms: { verified: formsVerified, status: formsStatus, retries: formsRetries },
       contact: { verified: contactPass, retries: contactRetries },
+      experience: { verified: experiencePass, retries: experienceRetries },
     },
     suggested_questions: suggestedQuestions,
     generated_at: new Date(d.now()).toISOString(),
@@ -756,6 +821,8 @@ export async function startExplorer(
     formsRetries,
     contactVerified: contactPass,
     contactRetries,
+    experienceVerified: experiencePass,
+    experienceRetries,
     pagesFetched: limits.pagesFetched,
     browserActions: limits.browserActions,
     httpRequests: limits.httpRequests,
@@ -777,6 +844,7 @@ export async function startExplorer(
     formsVerified,
     formsStatus,
     contactVerified: contactPass,
+    experienceVerified: experiencePass,
     wallTimeMs,
     logFile: logger.path,
     ...costSummary,

@@ -54,7 +54,7 @@ function ToolCallBlock({
         ) : (
           <ChevronRight className="w-3 h-3 text-neutral-600 shrink-0" />
         )}
-        <span className="text-brand/80 font-medium">{event.tool_name}</span>
+        <span className="text-zinc-300 font-medium">{event.tool_name}</span>
         <span className="text-neutral-600">(</span>
         <span className="text-neutral-500 truncate max-w-[180px]">
           {event.tool_input
@@ -75,7 +75,7 @@ function ToolCallBlock({
         )}
       </button>
       {expanded && result?.tool_output_preview && (
-        <pre className="mt-1 ml-5 p-2 rounded bg-[#2B2B2B]/70 border border-[#3A3A3A] text-[10px] text-neutral-600 overflow-x-auto max-h-[120px] overflow-y-auto whitespace-pre-wrap break-all leading-relaxed">
+        <pre className="mt-1 ml-5 p-2 rounded bg-[#0a0c12]/70 border border-[#3A3A3A] text-[10px] text-neutral-600 overflow-x-auto max-h-[120px] overflow-y-auto whitespace-pre-wrap break-all leading-relaxed">
           {result.tool_output_preview}
         </pre>
       )}
@@ -156,7 +156,7 @@ export default function AgentPanel({ side, events, isRunning, compact, hideHeade
   return (
     <div
       className={`flex flex-col overflow-hidden h-full ${
-        compact ? (hideHeader ? "bg-[#0F0F0F]" : "bg-[#2B2B2B]") : "rounded-xl border border-[#444444] bg-[#2B2B2B]"
+        compact ? (hideHeader ? "bg-[#08090c]" : "bg-[#0a0c12]") : "rounded-xl border border-white/[0.08] bg-[#0a0c12]"
       }`}
     >
       {/* Header — hidden when parent provides its own labels */}
@@ -182,7 +182,7 @@ export default function AgentPanel({ side, events, isRunning, compact, hideHeade
                 {!isLeft && (
                   <>
                     <span className="text-neutral-600">+</span>
-                    <span className="text-brand font-bold">AGENTS.JSON</span>
+                    <span className="text-zinc-200 font-mono font-semibold tracking-wide">AGENTS.JSON</span>
                   </>
                 )}
               </div>

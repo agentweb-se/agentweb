@@ -482,8 +482,10 @@ export function executeWriteSection(
       (doc.instructions as Record<string, unknown>)[child] = data;
     } else if (parent === "capabilities") {
       (doc.capabilities as Record<string, unknown>)[child] = data;
+    } else if (parent === "presentation") {
+      (doc.presentation as Record<string, unknown>)[child] = data;
     } else {
-      return `Unknown parent section: ${parent}. Use 'instructions.X' or 'capabilities.X' for nested paths.`;
+      return `Unknown parent section: ${parent}. Use 'instructions.X', 'capabilities.X', or 'presentation.X' for nested paths.`;
     }
   } else {
     return `Invalid section path: ${section}. Use 'site', 'instructions.search', 'capabilities.navigation', etc.`;

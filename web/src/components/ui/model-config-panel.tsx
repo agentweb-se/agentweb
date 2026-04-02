@@ -23,6 +23,7 @@ const PHASE_LABELS: Record<string, string> = {
   browse: "Navigation",
   forms: "Filters & Sorting",
   contact: "Contact Info",
+  experience: "Experience",
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -68,12 +69,13 @@ function ModelSelect({
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none bg-[#383838] border border-[#505050] rounded-md px-3 py-1.5 text-[11px] text-neutral-200 font-mono cursor-pointer hover:border-[#5A5A5A] focus:border-brand/50 focus:outline-none transition-colors"
+          className="w-full appearance-none bg-[#0a0c12] border border-white/10 rounded-md px-3 py-1.5 text-[11px] text-neutral-200 font-mono cursor-pointer hover:border-white/20 focus:border-brand/50 focus:outline-none transition-colors"
+          style={{ colorScheme: "dark" }}
         >
           {Object.entries(grouped).map(([provider, providerModels]) => (
-            <optgroup key={provider} label={PROVIDER_LABELS[provider] || provider}>
+            <optgroup key={provider} label={PROVIDER_LABELS[provider] || provider} className="bg-[#0a0c12] text-neutral-300">
               {providerModels.map((m) => (
-                <option key={m.id} value={m.id}>
+                <option key={m.id} value={m.id} className="bg-[#0a0c12] text-neutral-200">
                   {m.name} — ${m.inputCostPer1M}/${m.outputCostPer1M} per 1M
                 </option>
               ))}
@@ -126,7 +128,7 @@ export function ModelConfigPanel({
   if (!loaded || allModels.length === 0) return null;
 
   return (
-    <div className="mb-3 rounded-lg border border-[#444444] bg-[#2D2D2D] overflow-hidden fade-in">
+    <div className="mb-3 rounded-lg border border-white/[0.08] bg-[#0e1018] overflow-hidden fade-in">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
@@ -141,7 +143,7 @@ export function ModelConfigPanel({
       </button>
 
       {expanded && (
-        <div className="px-3 pb-3 space-y-2 border-t border-[#3F3F3F] pt-2">
+        <div className="px-3 pb-3 space-y-2 border-t border-white/[0.06] pt-2">
           {Object.keys(PHASE_LABELS).map((phase) => (
             <ModelSelect
               key={phase}

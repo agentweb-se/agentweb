@@ -108,10 +108,28 @@ export type SiteInstructions = z.infer<typeof SiteInstructions>;
 
 // --- Presentation ---
 
+export const ProductDisplay = z.object({
+  card_template: z.string(),     // Markdown template for a single product (uses {field} placeholders)
+  image_source: z.string(),      // Where product images come from in API responses / pages
+  key_fields: z.array(z.string()), // Fields to always include when displaying a product
+});
+export type ProductDisplay = z.infer<typeof ProductDisplay>;
+
+export const ResponseStyle = z.object({
+  greeting: z.string().optional(), // How to open responses (not robotic)
+  found_results: z.string(),      // How to present results when found
+  no_results: z.string(),         // What to say/do when nothing found
+  partial_results: z.string().optional(), // How to handle incomplete data
+});
+export type ResponseStyle = z.infer<typeof ResponseStyle>;
+
 export const PresentationRules = z.object({
   rules: z.array(z.string()),
   currency: z.string().optional(),
   language_note: z.string().optional(),
+  voice: z.string().optional(),                   // Brand personality/tone description
+  product_display: ProductDisplay.optional(),      // How to format product cards with images
+  response_style: ResponseStyle.optional(),        // Overall response formatting guidelines
 });
 export type PresentationRules = z.infer<typeof PresentationRules>;
 

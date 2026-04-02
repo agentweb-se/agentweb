@@ -354,6 +354,62 @@ export function assessContactQuality(doc: AgentsJsonType): string[] {
   return failures;
 }
 
+// --- Experience Quality Assessment ---
+
+export function assessExperienceQuality(doc: AgentsJsonType): string[] {
+  const failures: string[] = [];
+  const pres = doc.presentation as Record<string, unknown>;
+
+  // Voice
+  const voice = pres?.voice;
+  if (!voice || typeof voice !== "string" || voice.length < 20) {
+    failures.push(
+      `presentation.voice is missing or too short (${typeof voice === "string" ? voice.length : 0} chars). ` +
+      'Describe the brand personality based on actual site copy (20+ chars).'
+    );
+  }
+
+  // Product display
+  const pd = pres?.product_display as Record<string, unknown> | undefined;
+  if (!pd) {
+    failures.push(
+      'presentation.product_display is missing. Visit product pages, find image URLs, and write: ' +
+      '{ card_template: "markdown template", image_source: "where images come from", key_fields: ["name", "price", ...] }'
+    );
+  } else {
+    if (!pd.card_template || typeof pd.card_template !== "string") {
+      failures.push('presentation.product_display.card_template is missing — provide a markdown template for displaying products.');
+    }
+    if (!pd.image_source || typeof pd.image_source !== "string" || (pd.image_source as string).length < 20) {
+      failures.push(
+        'presentation.product_display.image_source is missing or too short. ' +
+        'Document where product images come from (CDN pattern, API field name, structured data path). Must reference real URLs you found.'
+      );
+    }
+    if (!pd.key_fields || !Array.isArray(pd.key_fields) || (pd.key_fields as unknown[]).length < 3) {
+      failures.push('presentation.product_display.key_fields must list 3+ fields to include when displaying products.');
+    }
+  }
+
+  // Response style
+  const rs = pres?.response_style as Record<string, unknown> | undefined;
+  if (!rs) {
+    failures.push(
+      'presentation.response_style is missing. Write: ' +
+      '{ found_results: "how to present results", no_results: "what to say when nothing found" }'
+    );
+  } else {
+    if (!rs.found_results || typeof rs.found_results !== "string") {
+      failures.push('presentation.response_style.found_results is missing — describe how to present product results.');
+    }
+    if (!rs.no_results || typeof rs.no_results !== "string") {
+      failures.push('presentation.response_style.no_results is missing — describe what to say when nothing is found.');
+    }
+  }
+
+  return failures;
+}
+
 // --- Behavioral Auto-Fill ---
 
 /** Required behavioral instructions injected into every agents.json */
@@ -363,6 +419,7 @@ export const REQUIRED_BEHAVIOR_RULES = [
   "When calling any API endpoint documented here, always include Origin and Referer headers matching the site domain (e.g. Origin: https://example.com, Referer: https://example.com/) — BFF endpoints reject requests without them",
   "Return real results with actual links to the site",
   "Answer the specific question asked — no generic advice, no site overviews, no unsolicited recommendations",
+  "Follow the presentation guidelines: use the documented voice/tone, format products using the card_template with images when available, and follow response_style for overall formatting",
 ];
 
 /**

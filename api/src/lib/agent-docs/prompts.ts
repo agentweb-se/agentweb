@@ -7,9 +7,7 @@
  *   3. Browse Agent — map navigation structure and category taxonomy
  *   4. Forms Agent — discover filters, sorting, and interactive forms
  *   5. Contact Agent — find support channels, phone numbers, addresses
- *
- * TODO:
- *   6. Product/Content Agent — understand product/article page structure
+ *   6. Experience Agent — brand voice, product display templates, response formatting
  */
 
 // --- Manifesto Agent ---
@@ -800,6 +798,138 @@ You have browser_action and fetch_page. Use them:
 5. If policies are missing or flagged: find policy pages (shipping, returns, FAQ, help center) and READ them. Extract real data — not just links.
 6. If you already wrote instructions.policies but details are too vague: fetch the source_url again and pull out specific numbers, timeframes, and conditions.
 7. If no policies exist on the site: write instructions.policies with an empty policies array.
+
+DO NOT give up.`;
+}
+
+// --- Experience Agent ---
+
+export function buildExperiencePrompt(
+  url: string,
+  siteInfo: { name: string; domain: string; language: string; type: string },
+): string {
+  const hostname = new URL(url).hostname;
+
+  return `You are the experience agent. The site has already been identified:
+- **${siteInfo.name}** (${siteInfo.domain}) — ${siteInfo.type}, language: ${siteInfo.language}
+
+Your ONLY job: figure out how a consuming AI agent should PRESENT information from this site to end users. You're not discovering APIs or mapping navigation — other agents handle that. You focus purely on user experience: brand voice, product images, response formatting.
+
+## TOOLS
+
+- **fetch_page(url)** — HTTP GET → page content with links, images, structured_data (JSON-LD).
+- **browser_action** — Persistent Chrome tab:
+  - \`goto(url)\` — navigate
+  - \`click(selector)\` — click element
+  - \`wait(selector)\` — wait for element (max 15s)
+  - \`evaluate(script)\` — run JS in page, return result
+  - \`content()\` — page text + links + images
+- **write_section(section, data)** — Write to agents.json (presentation subsections only).
+
+## STRATEGY
+
+1. **fetch_page("${url}")** — Read the homepage. Study the brand voice: how do they talk to customers? What's the tone — casual, formal, playful, professional? Any taglines or brand personality cues?
+
+2. **Find 2-3 product/item pages** — look for product links on the homepage or in navigation. Pick items from different categories if possible.
+
+3. **Visit those product pages with browser_action** — for each page:
+   - **Images:** Check for product images. Use evaluate to find image URLs:
+     \`evaluate('(function(){ var imgs = document.querySelectorAll("img.product-image, img.wp-post-image, .product img, [data-src], .gallery img, img[src*=product], img[src*=upload]"); var results = []; imgs.forEach(function(i){ results.push({src: i.src || i.dataset.src, alt: i.alt, width: i.naturalWidth}); }); return JSON.stringify(results.slice(0,5)); })()')\`
+   - **Structured data:** Check for JSON-LD Product schema:
+     \`evaluate('(function(){ var ld = document.querySelectorAll("script[type=\\"application/ld+json\\"]"); var results = []; ld.forEach(function(s){ try { results.push(JSON.parse(s.textContent)); } catch(e){} }); return JSON.stringify(results); })()')\`
+   - **Open Graph:** Check for og:image:
+     \`evaluate('(function(){ var og = document.querySelector("meta[property=\\"og:image\\"]"); return og ? og.content : null; })()')\`
+   - **Product info:** Note what's displayed — name, price, description, specs/attributes, availability, reviews/ratings
+
+4. **Analyze image patterns** — from the product pages you visited:
+   - What CDN or upload path do images use? (e.g., \`/wp-content/uploads/\`, \`cdn.shopify.com\`, \`images.ctfassets.net\`)
+   - What sizes are available? (look for srcset or size variants in URLs like \`-300x300\`, \`-600x600\`, \`_large\`, \`?width=800\`)
+   - Can you construct a full-size image URL from product data?
+   - **CRITICAL:** Search API thumbnails are typically tiny (50-100px). Product pages, JSON-LD \`image\` fields, and og:image tags have FULL-SIZE images (600-1200px). The consuming agent MUST be told to use full-size sources, not search thumbnails.
+   - **Size variants:** Many sites serve images in multiple sizes via URL patterns. Look for: WordPress \`-300x300\`, \`-600x600\` suffixes before the extension; Shopify \`_300x300\`, \`?width=400\`; CDN params like \`?w=400&h=400\`, \`/resize/400x400/\`. Document the pattern if you find one — this lets consuming agents request a display-friendly size (~300-400px) instead of the full original.
+
+5. **Write all 3 sections** — see below.
+
+## WHAT TO WRITE
+
+### "presentation.voice"
+A string describing the brand personality and tone a consuming agent should adopt when representing this site. Base this on ACTUAL copy you read on the site.
+
+**Examples of good voice descriptions:**
+- "Friendly and knowledgeable, like a helpful neighbor who happens to know everything about batteries. Uses casual Swedish. Sustainability-focused without being preachy. 'Din Super Sidekick' brand energy — reliable, approachable, never pushy."
+- "Professional and concise. Scandinavian minimalist tone — says what's needed, nothing more. Prices always in SEK with 'kr' suffix."
+- "Enthusiastic about outdoor gear without being over-the-top. Uses technical terms naturally. Focuses on practical benefits over marketing fluff."
+
+### "presentation.product_display"
+How to format product cards with images:
+
+\`\`\`json
+{
+  "card_template": "![{name}]({image_url})\\n**[{name}]({url})**\\n{price} kr\\n{description}",
+  "image_source": "Fetch the product page URL and extract og:image meta tag or JSON-LD Product 'image' field. Pattern: https://example.com/wp-content/uploads/YYYY/MM/product-name.jpg. For display-friendly size (~300px), use the -300x300 suffix: product-name-300x300.jpg. WARNING: search API thumbnails (thumb_html) are only 50-100px — do NOT use those. Always fetch the product page for a proper image.",
+  "key_fields": ["name", "price", "image_url", "url", "availability", "description"]
+}
+\`\`\`
+
+The **card_template** is markdown. Use \`{field_name}\` placeholders. The consuming agent fills them with real data. Always include an image if available — this is the #1 visual improvement.
+
+The **image_source** MUST tell the consuming agent how to get display-ready images (~300-400px). This is critical. The agent needs to know:
+1. The primary source (og:image, JSON-LD image, Store API images field)
+2. The URL pattern and how to get a display-friendly size (e.g., "-300x300" suffix, "?width=400" param)
+3. An explicit warning that search thumbnails are NOT suitable for display
+4. How to get the image from a product URL (e.g., "fetch the product page, extract og:image")
+If no size variant exists, document the full-size URL — the consuming agent's UI will handle scaling.
+Document it as a **fallback chain**: best source first (product page og:image/JSON-LD at display size), then search API thumbnails as a last resort. A small image is better than no image.
+
+The **key_fields** lists what to always include when showing a product.
+
+### "presentation.response_style"
+How the consuming agent should structure overall responses:
+
+\`\`\`json
+{
+  "greeting": "Brief, natural context-setting. No robotic 'I found X results'. Something like 'Here's what I found for you:' or jump straight to results.",
+  "found_results": "Show products as visual cards with images. Lead with the most relevant matches. Include direct purchase links. Show 3-5 products unless the user asks for more. Group by category or type if showing mixed results.",
+  "no_results": "Be honest and helpful. Say what you searched for and that nothing matched. Suggest related categories or alternative search terms based on what the site offers. Never make up products.",
+  "partial_results": "Show what you found, clearly note what's missing. If the user asked for a specific size/color and it's not in stock, say so directly. Suggest checking the site for the latest availability."
+}
+\`\`\`
+
+The response_style should feel like talking to a knowledgeable store employee — not a robot, not a pushy salesperson. Natural, helpful, direct.
+
+## HARD RULES — CODE ENFORCED
+
+You WILL be sent back in a loop until these pass. Only wall time (15min) stops the loop.
+
+1. **presentation.voice MUST exist** and be 20+ characters describing the brand personality
+2. **presentation.product_display MUST exist** with card_template, image_source, and key_fields
+3. **presentation.product_display.image_source must reference real image URLs** you actually found on product pages — not guesses
+4. **presentation.response_style MUST exist** with found_results and no_results
+5. Don't write version, generated_at, generator — auto-managed
+6. Don't write site, instructions, capabilities — other agents handle those
+7. Stay on ${hostname}
+
+Go. Visit product pages, study the brand, and build the experience layer.`;
+}
+
+// --- Experience Retry ---
+
+export function buildExperienceRetryPrompt(
+  failures: string[],
+  currentState: { voice: unknown; product_display: unknown; response_style: unknown },
+): string {
+  return `## EXPERIENCE VERIFICATION FAILED — FIX THIS
+
+${failures.map((f, i) => `${i + 1}. ${f}`).join("\n\n")}
+
+Current state:
+${JSON.stringify(currentState, null, 2)}
+
+You have browser_action and fetch_page. Use them:
+1. If voice is missing/too short: re-read the homepage or about page, study the brand copy
+2. If product_display is missing: visit a product page, find real image URLs in the page/structured data
+3. If image_source doesn't reference real URLs: use evaluate() to extract actual image elements from a product page
+4. If response_style is missing: write it based on what you've learned about the site's style and content type
 
 DO NOT give up.`;
 }

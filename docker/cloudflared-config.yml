@@ -1,0 +1,23 @@
+# Cloudflare Tunnel config — lives on the server at /etc/cloudflared/config.yml
+# Replace <TUNNEL_ID> with the ID from `cloudflared tunnel create agentweb`
+
+tunnel: <TUNNEL_ID>
+credentials-file: /etc/cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  # Frontend — pages, UI
+  - hostname: agentweb.se
+    service: http://localhost:3000
+
+  # Backend API — direct browser access for SSE streaming
+  # The browser hits this for pipeline/events and agent/demo to avoid
+  # Next.js proxy buffering. Must match NEXT_PUBLIC_API_URL.
+  - hostname: api.agentweb.se
+    service: http://localhost:4001
+
+  # Analytics dashboard (Umami) — self-hosted, admin-only
+  - hostname: analytics.agentweb.se
+    service: http://localhost:3001
+
+  # Catch-all (required by cloudflared)
+  - service: http_status:404

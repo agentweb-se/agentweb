@@ -14,9 +14,9 @@ type Props = {
 
 function parseInline(text: string): React.ReactNode[] {
   const nodes: React.ReactNode[] = [];
-  // Match: **bold**, *italic*, [text](url), `code`, bare URLs
+  // Match: ![alt](url), **bold**, *italic*, [text](url), `code`, bare URLs
   const re =
-    /(\*\*(.+?)\*\*)|(\*(.+?)\*)|(\[([^\]]+)\]\((https?:\/\/[^)]+)\))|(`([^`]+)`)|(https?:\/\/[^\s<>)\]]+)/g;
+    /(!\[([^\]]*)\]\((https?:\/\/[^)]+)\))|(\*\*(.+?)\*\*)|(\*(.+?)\*)|(\[([^\]]+)\]\((https?:\/\/[^)]+)\))|(`([^`]+)`)|(https?:\/\/[^\s<>)\]]+)/g;
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -29,53 +29,64 @@ function parseInline(text: string): React.ReactNode[] {
     }
 
     if (match[1]) {
+      // ![alt](url) — image
+      nodes.push(
+        <img
+          key={key++}
+          src={match[3]}
+          alt={match[2] || ""}
+          className="block max-w-[240px] max-h-[240px] rounded-lg object-contain my-2 bg-white/[0.03] border border-white/[0.06]"
+          loading="lazy"
+        />
+      );
+    } else if (match[4]) {
       // **bold** — recursively parse inner content for links etc.
       nodes.push(
         <strong key={key++} className="font-semibold text-neutral-300">
-          {parseInline(match[2])}
+          {parseInline(match[5])}
         </strong>
       );
-    } else if (match[3]) {
+    } else if (match[6]) {
       // *italic* — recursively parse inner content
       nodes.push(
         <em key={key++} className="italic">
-          {parseInline(match[4])}
+          {parseInline(match[7])}
         </em>
       );
-    } else if (match[5]) {
-      // [text](url)
-      nodes.push(
-        <a
-          key={key++}
-          href={match[7]}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-brand hover:text-brand/80 underline underline-offset-2"
-        >
-          {match[6]}
-        </a>
-      );
     } else if (match[8]) {
-      // `inline code`
-      nodes.push(
-        <code
-          key={key++}
-          className="px-1 py-0.5 rounded bg-[#3F3F3F] text-amber-400 text-[0.85em] font-mono"
-        >
-          {match[9]}
-        </code>
-      );
-    } else if (match[10]) {
-      // Bare URL
+      // [text](url)
       nodes.push(
         <a
           key={key++}
           href={match[10]}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-brand hover:text-brand/80 underline underline-offset-2 break-all"
+          className="text-blue-400 hover:text-blue-300 underline underline-offset-2"
         >
-          {match[10]}
+          {match[9]}
+        </a>
+      );
+    } else if (match[11]) {
+      // `inline code`
+      nodes.push(
+        <code
+          key={key++}
+          className="px-1 py-0.5 rounded bg-white/[0.04] text-amber-400 text-[0.85em] font-mono"
+        >
+          {match[12]}
+        </code>
+      );
+    } else if (match[13]) {
+      // Bare URL
+      nodes.push(
+        <a
+          key={key++}
+          href={match[13]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300 underline underline-offset-2 break-all"
+        >
+          {match[13]}
         </a>
       );
     }

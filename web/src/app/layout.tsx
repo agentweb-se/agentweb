@@ -1,6 +1,20 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Instrument_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
+
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-instrument",
+  display: "swap",
+});
+
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-space-mono",
+  display: "swap",
+});
 
 const cascadiaMono = localFont({
   src: "./fonts/CascadiaMono.ttf",
@@ -26,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${cascadiaMono.variable} antialiased font-[family-name:var(--font-cascadia-mono)]`}
+        className={`${instrumentSans.variable} ${spaceMono.variable} ${cascadiaMono.variable} antialiased font-sans`}
       >
         {children}
       </body>

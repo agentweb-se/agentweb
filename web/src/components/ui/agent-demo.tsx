@@ -187,7 +187,7 @@ export default function AgentDemo({ domain, suggestedQuestions: externalQuestion
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-brand/20 bg-gradient-to-br from-[#333] to-[#2D2D2D] fade-in stagger-4">
+    <div className="relative overflow-hidden rounded-2xl border border-brand/20 bg-gradient-to-br from-[#0c0f16] to-[#0e1018] fade-in stagger-4">
       <div className="absolute inset-0 grid-pattern opacity-20 pointer-events-none" />
 
       <div className="relative p-6 sm:p-8">
@@ -213,7 +213,7 @@ export default function AgentDemo({ domain, suggestedQuestions: externalQuestion
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Ask anything about this site..."
               disabled={isRunning}
-              className="flex-1 h-11 px-4 bg-[#2B2B2B] border border-[#505050] rounded-xl text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/30 disabled:opacity-50 transition-all"
+              className="flex-1 h-11 px-4 bg-[#0a0c12] border border-[white/[0.1]] rounded-xl text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/30 disabled:opacity-50 transition-all"
             />
             <Button
               type="submit"
@@ -233,18 +233,19 @@ export default function AgentDemo({ domain, suggestedQuestions: externalQuestion
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
                   disabled={isRunning}
-                  className="appearance-none bg-[#383838] border border-[#505050] rounded-md px-2 py-1 pr-6 text-[10px] text-neutral-300 font-mono cursor-pointer hover:border-[#5A5A5A] focus:border-brand/50 focus:outline-none transition-colors disabled:opacity-50"
+                  className="appearance-none bg-[#0a0c12] border border-white/10 rounded-md px-2 py-1 pr-6 text-[10px] text-neutral-300 font-mono cursor-pointer hover:border-white/20 focus:border-brand/50 focus:outline-none transition-colors disabled:opacity-50"
+                  style={{ colorScheme: "dark" }}
                 >
-                  <option value="">Default (Sonnet 4.6)</option>
+                  <option value="" className="bg-[#0a0c12] text-neutral-200">Default (Sonnet 4.6)</option>
                   {Object.entries(
                     allModels.reduce((acc, m) => {
                       (acc[m.provider] = acc[m.provider] || []).push(m);
                       return acc;
                     }, {} as Record<string, ModelInfo[]>)
                   ).map(([provider, models]) => (
-                    <optgroup key={provider} label={provider.charAt(0).toUpperCase() + provider.slice(1)}>
+                    <optgroup key={provider} label={provider.charAt(0).toUpperCase() + provider.slice(1)} className="bg-[#0a0c12] text-neutral-300">
                       {models.map((m) => (
-                        <option key={m.id} value={m.id}>
+                        <option key={m.id} value={m.id} className="bg-[#0a0c12] text-neutral-200">
                           {m.name}
                         </option>
                       ))}
@@ -265,7 +266,7 @@ export default function AgentDemo({ domain, suggestedQuestions: externalQuestion
                 <button
                   key={q}
                   onClick={() => handleSuggestion(q)}
-                  className="px-3 py-1.5 rounded-lg bg-[#383838] border border-[#484848] text-xs text-neutral-400 hover:text-white hover:border-brand/30 transition-all"
+                  className="px-3 py-1.5 rounded-lg bg-[white/[0.04]] border border-[white/[0.06]] text-xs text-neutral-400 hover:text-white hover:border-brand/30 transition-all"
                 >
                   {q}
                 </button>

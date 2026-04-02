@@ -81,7 +81,7 @@ function EntryLine({ entry }: { entry: LogEntry }) {
     return (
       <div>
         <div
-          className="flex items-center gap-2 cursor-pointer hover:bg-[#3F3F3F] -mx-2 px-2 py-0.5 rounded"
+          className="flex items-center gap-2 cursor-pointer hover:bg-white/[0.06] -mx-2 px-2 py-0.5 rounded"
           onClick={() => setExpanded(!expanded)}
         >
           <span className="text-brand text-xs font-medium">▸</span>
@@ -98,7 +98,7 @@ function EntryLine({ entry }: { entry: LogEntry }) {
           )}
         </div>
         {expanded && inputStr && (
-          <pre className="ml-5 mt-1 text-[10px] text-neutral-500 bg-[#2B2B2B] rounded p-2 border border-[#3F3F3F] max-h-[200px] overflow-auto">
+          <pre className="ml-5 mt-1 text-[10px] text-neutral-500 bg-[#0a0c12] rounded p-2 border border-white/[0.06] max-h-[200px] overflow-auto">
             {inputStr}
           </pre>
         )}
@@ -111,7 +111,7 @@ function EntryLine({ entry }: { entry: LogEntry }) {
     return (
       <div>
         <div
-          className="flex items-center gap-2 cursor-pointer hover:bg-[#3F3F3F] -mx-2 px-2 py-0.5 rounded"
+          className="flex items-center gap-2 cursor-pointer hover:bg-white/[0.06] -mx-2 px-2 py-0.5 rounded"
           onClick={() => setExpanded(!expanded)}
         >
           <span className="text-emerald-500 text-xs">✓</span>
@@ -121,7 +121,7 @@ function EntryLine({ entry }: { entry: LogEntry }) {
           <span className="text-emerald-600 text-[10px]">ok</span>
         </div>
         {expanded && entry.tool_output_preview && (
-          <pre className="ml-5 mt-1 text-[10px] text-neutral-500 bg-[#2B2B2B] rounded p-2 border border-[#3F3F3F] max-h-[200px] overflow-auto">
+          <pre className="ml-5 mt-1 text-[10px] text-neutral-500 bg-[#0a0c12] rounded p-2 border border-white/[0.06] max-h-[200px] overflow-auto">
             {entry.tool_output_preview}
           </pre>
         )}
@@ -266,7 +266,7 @@ export function AgentLogPanel({ entries }: { entries: LogEntry[] }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#444444]">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.08]">
         <Terminal className="w-4 h-4 text-brand" />
         <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wide">
           Agent Log

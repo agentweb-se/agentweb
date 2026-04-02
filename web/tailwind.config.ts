@@ -11,7 +11,17 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-cascadia-mono)", "Cascadia Mono", "ui-monospace", "monospace"],
+        sans: [
+          "var(--font-instrument)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        display: [
+          "var(--font-space-mono)",
+          "ui-monospace",
+          "monospace",
+        ],
         mono: ["var(--font-cascadia-mono)", "Cascadia Mono", "ui-monospace", "monospace"],
       },
       colors: {
@@ -50,9 +60,9 @@ const config: Config = {
           dark: "#CC5500",
         },
         surface: {
-          DEFAULT: "#333333",
-          raised: "#383838",
-          overlay: "#3F3F3F",
+          DEFAULT: "#0c0f16",
+          raised: "#10131b",
+          overlay: "#141720",
         },
       },
       borderRadius: {

@@ -8,6 +8,7 @@ import {
   Navigation,
   SlidersHorizontal,
   Phone,
+  Palette,
   CheckCircle2,
   XCircle,
   Loader2,
@@ -41,6 +42,7 @@ const PHASE_ICONS: Record<string, React.ElementType> = {
   browse: Navigation,
   forms: SlidersHorizontal,
   contact: Phone,
+  experience: Palette,
 };
 
 /** Live elapsed timer — updates every second */
@@ -90,7 +92,7 @@ function PhaseRow({ phase }: { phase: PhaseState }) {
             ? "border-red-500/20 bg-red-500/5"
             : isActive
               ? "border-brand/30 bg-brand/5"
-              : "border-[#444444] bg-[#2D2D2D] opacity-50"
+              : "border-white/[0.08] bg-[#0e1018] opacity-50"
       }`}
     >
       <div className="flex items-center gap-3">
@@ -103,7 +105,7 @@ function PhaseRow({ phase }: { phase: PhaseState }) {
                 ? "bg-red-500/10"
                 : isActive
                   ? "bg-brand/10"
-                  : "bg-[#3F3F3F]"
+                  : "bg-white/[0.04]"
           }`}
         >
           {isDone ? (
@@ -180,7 +182,7 @@ function PhaseRow({ phase }: { phase: PhaseState }) {
 
       {/* Progress bar */}
       {(isActive || isDone || isFailed) && (
-        <div className={`mt-2 h-1 rounded-full bg-[#3F3F3F] overflow-hidden ${isActive && phase.isThinking ? "pulse-live" : ""}`}>
+        <div className={`mt-2 h-1 rounded-full bg-white/[0.04] overflow-hidden ${isActive && phase.isThinking ? "pulse-live" : ""}`}>
           <div
             className={`h-full rounded-full transition-all duration-700 ease-out ${
               isDone
@@ -216,7 +218,7 @@ export function PhaseProgressPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#444444]">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.08]">
         <div className={`w-2 h-2 rounded-full ${isComplete ? "bg-emerald-500" : "bg-brand pulse-live"}`} />
         <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wide">
           Explorer

@@ -33,6 +33,7 @@ const EXPECTED_TOOL_CALLS: Record<string, number> = {
   browse: 12,
   forms: 20,
   contact: 10,
+  experience: 10,
 };
 
 const INITIAL_PHASES: PhaseState[] = [
@@ -41,6 +42,7 @@ const INITIAL_PHASES: PhaseState[] = [
   { id: "browse", label: "Navigation", sublabel: "Waiting...", status: "waiting", retries: 0, progress: 0, steps: 0, expectedSteps: EXPECTED_TOOL_CALLS.browse, isThinking: false },
   { id: "forms", label: "Filters & Sorting", sublabel: "Waiting...", status: "waiting", retries: 0, progress: 0, steps: 0, expectedSteps: EXPECTED_TOOL_CALLS.forms, isThinking: false },
   { id: "contact", label: "Contact Info", sublabel: "Waiting...", status: "waiting", retries: 0, progress: 0, steps: 0, expectedSteps: EXPECTED_TOOL_CALLS.contact, isThinking: false },
+  { id: "experience", label: "Experience", sublabel: "Waiting...", status: "waiting", retries: 0, progress: 0, steps: 0, expectedSteps: EXPECTED_TOOL_CALLS.experience, isThinking: false },
 ];
 
 // Map tool names to human-readable sublabels
@@ -52,6 +54,7 @@ function toolToSublabel(toolName: string, phase: string): string {
         : phase === "forms" ? "Testing filter controls..."
         : phase === "contact" ? "Browsing the site..."
         : phase === "browse" ? "Visiting a category..."
+        : phase === "experience" ? "Visiting product pages..."
         : "Browsing...";
     case "http_request": return "Verifying an endpoint...";
     case "write_section": return "Writing results...";
@@ -276,6 +279,7 @@ export function AgentExplorer({ url, onComplete, models }: Props) {
                 browse: "Scanning the navigation...",
                 forms: "Looking for filter controls...",
                 contact: "Checking the footer...",
+                experience: "Studying brand & product pages...",
               };
               updatePhase(phaseId, {
                 status: "running" as PhaseStatus,
@@ -335,6 +339,12 @@ export function AgentExplorer({ url, onComplete, models }: Props) {
                 sublabel: event.contactVerified ? "Contact info found" : "Could not find",
                 isThinking: false,
               });
+              updatePhase("experience", {
+                status: event.experienceVerified ? "done" : "failed",
+                progress: 100,
+                sublabel: event.experienceVerified ? "Presentation ready" : "Could not complete",
+                isThinking: false,
+              });
             }
 
             // Explorer lifecycle events → debug log
@@ -351,7 +361,8 @@ export function AgentExplorer({ url, onComplete, models }: Props) {
               event.type === "explorer:manifesto-retry" ||
               event.type === "explorer:browse-retry" ||
               event.type === "explorer:forms-retry" ||
-              event.type === "explorer:contact-retry"
+              event.type === "explorer:contact-retry" ||
+              event.type === "explorer:experience-retry"
             ) {
               setLogEntries((prev) => [...prev, event as LogEntry]);
               continue;
@@ -476,8 +487,8 @@ export function AgentExplorer({ url, onComplete, models }: Props) {
       {/* Two-panel layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Left: Progress / Debug tabs */}
-        <div className="bg-surface rounded-xl border border-[#444444] shadow-lg shadow-black/30 overflow-hidden h-[600px]">
-          <div className="flex items-center border-b border-[#444444]">
+        <div className="bg-surface rounded-xl border border-white/[0.08] shadow-lg shadow-black/30 overflow-hidden h-[600px]">
+          <div className="flex items-center border-b border-white/[0.08]">
             <button
               onClick={() => setLeftTab("progress")}
               className={`flex items-center gap-1.5 px-4 py-3 text-xs font-semibold uppercase tracking-wide transition-colors ${
@@ -521,7 +532,7 @@ export function AgentExplorer({ url, onComplete, models }: Props) {
         </div>
 
         {/* Right: API Document */}
-        <div className="bg-surface rounded-xl border border-[#444444] shadow-lg shadow-black/30 overflow-hidden h-[600px]">
+        <div className="bg-surface rounded-xl border border-white/[0.08] shadow-lg shadow-black/30 overflow-hidden h-[600px]">
           <AgentDocPanel
             sections={docSections}
             fullDoc={fullDoc}

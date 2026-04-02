@@ -12,6 +12,7 @@ import {
   Download,
   Globe,
   Loader2,
+  Palette,
   XCircle,
   Zap,
 } from "lucide-react";
@@ -31,7 +32,14 @@ type AgentsJsonData = {
     description: string;
   };
   instructions: Record<string, unknown>;
-  presentation: { rules: string[]; currency?: string; language_note?: string };
+  presentation: {
+    rules: string[];
+    currency?: string;
+    language_note?: string;
+    voice?: string;
+    product_display?: { card_template: string; image_source: string; key_fields: string[] };
+    response_style?: { greeting?: string; found_results: string; no_results: string; partial_results?: string };
+  };
   pages: {
     key_pages: Array<{ url: string; description: string }>;
     total_explored: number;
@@ -47,11 +55,11 @@ function Chip({ children, variant = "default" }: {
   variant?: "default" | "success" | "warn" | "brand" | "muted";
 }) {
   const styles = {
-    default: "bg-[#3F3F3F] text-neutral-400 border-[#505050]",
+    default: "bg-white/[0.04] text-zinc-400 border-white/[0.1]",
     success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     warn: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     brand: "bg-brand/10 text-brand-light border-brand/20",
-    muted: "bg-[#383838] text-neutral-500 border-[#484848]",
+    muted: "bg-white/[0.03] text-zinc-500 border-white/[0.06]",
   };
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border ${styles[variant]}`}>
@@ -66,15 +74,9 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 const CAP_LABELS: Record<string, { label: string; desc: string }> = {
   navigation: { label: "Navigation", desc: "Site navigation and menu structure" },
-  search: { label: "Search", desc: "Search functionality detected" },
-  forms: { label: "Forms", desc: "Interactive forms for user input" },
+  search: { label: "Search", desc: "Search API discovery and verification" },
+  forms: { label: "Filters & Sorting", desc: "Product filters and sort parameters" },
   content_pages: { label: "Content Pages", desc: "Rich content pages with articles or info" },
-  listings: { label: "Listings", desc: "Product or item listings" },
-  downloads: { label: "Downloads", desc: "Downloadable files and resources" },
-  auth: { label: "Authentication", desc: "Login or signup functionality" },
-  location: { label: "Location", desc: "Physical location or map data" },
-  media_feeds: { label: "Media", desc: "Images, video, or media content" },
-  scheduling: { label: "Scheduling", desc: "Booking or scheduling features" },
 };
 
 const CAP_STATUS_COLORS: Record<string, { dot: string; text: string }> = {
@@ -162,7 +164,7 @@ export default function ProductResultsPage() {
   return (
     <>
       {/* Domain badge in a sub-bar */}
-      <div className="border-b border-[#3F3F3F] bg-[#2D2D2D]">
+      <div className="border-b border-white/[0.06] bg-[#0e1018]">
         <div className="max-w-[1200px] mx-auto px-6 h-10 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-neutral-500">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -171,7 +173,7 @@ export default function ProductResultsPage() {
           <Button
             onClick={() => router.push("/app")}
             variant="outline"
-            className="h-7 px-3 border-[#505050] text-neutral-400 hover:text-white hover:bg-[#3F3F3F] bg-transparent text-xs"
+            className="h-7 px-3 border-white/[0.1] text-neutral-400 hover:text-white hover:bg-white/[0.06] bg-transparent text-xs"
           >
             <ArrowLeft className="w-3 h-3 mr-1.5" />
             New exploration
@@ -202,7 +204,7 @@ export default function ProductResultsPage() {
                   <div className="text-4xl font-bold text-white tracking-tight">{foundCapabilities.length}</div>
                   <div className="text-xs text-neutral-500 mt-1 uppercase tracking-wider">Capabilities found</div>
                 </div>
-                <div className="text-center border-x border-[#444444]">
+                <div className="text-center border-x border-white/[0.08]">
                   <div className="text-4xl font-bold text-white tracking-tight">{agentsJson.pages.total_explored}</div>
                   <div className="text-xs text-neutral-500 mt-1 uppercase tracking-wider">Pages explored</div>
                 </div>
@@ -212,7 +214,7 @@ export default function ProductResultsPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-3 mt-6 pt-5 border-t border-[#444444]">
+              <div className="flex flex-wrap justify-center gap-3 mt-6 pt-5 border-t border-white/[0.08]">
                 <Chip variant="brand"><Bot className="w-3 h-3" /> AI-explored</Chip>
                 <Chip variant="success"><CheckCircle2 className="w-3 h-3" /> agents.json ready</Chip>
                 <Chip variant="muted"><Globe className="w-3 h-3" /> {agentsJson.site.type}</Chip>
@@ -246,10 +248,10 @@ export default function ProductResultsPage() {
                 return (
                   <div key={key} className={`bg-surface rounded-xl border p-4 transition-colors ${
                     cap.status === "not_found"
-                      ? "border-[#444444] opacity-50"
+                      ? "border-white/[0.08] opacity-50"
                       : isPower
                         ? "border-amber-500/30 hover:border-amber-500/40"
-                        : "border-[#444444] hover:border-brand/20"
+                        : "border-white/[0.08] hover:border-brand/20"
                   }`}>
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`w-2 h-2 rounded-full ${isPower ? "bg-amber-500" : colors.dot}`} />
@@ -265,7 +267,7 @@ export default function ProductResultsPage() {
                     </div>
                     {cap.details && <p className="text-xs text-neutral-500 mb-2">{cap.details}</p>}
                     {cap.endpoint && (
-                      <div className="text-[11px] text-neutral-600 bg-[#383838] px-2 py-1 rounded font-mono">
+                      <div className="text-[11px] text-neutral-600 bg-white/[0.04] px-2 py-1 rounded font-mono">
                         {cap.endpoint.method} {cap.endpoint.url}
                       </div>
                     )}
@@ -274,6 +276,61 @@ export default function ProductResultsPage() {
               })}
             </div>
           </div>
+
+          {/* ── Presentation / Experience ── */}
+          {(agentsJson.presentation.voice || agentsJson.presentation.product_display || agentsJson.presentation.response_style) && (
+            <div className="fade-in stagger-2">
+              <div className="flex items-center gap-2 mb-4">
+                <Palette className="w-5 h-5 text-brand" />
+                <h2 className="text-lg font-semibold text-white">Experience layer</h2>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {agentsJson.presentation.voice && (
+                  <div className="bg-surface rounded-xl border border-white/[0.08] p-4">
+                    <div className="text-sm font-medium text-white mb-2">Brand voice</div>
+                    <p className="text-xs text-zinc-400 leading-relaxed">{agentsJson.presentation.voice}</p>
+                  </div>
+                )}
+                {agentsJson.presentation.product_display && (
+                  <div className="bg-surface rounded-xl border border-white/[0.08] p-4">
+                    <div className="text-sm font-medium text-white mb-2">Product display</div>
+                    <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5">Card template</p>
+                    <pre className="text-xs text-zinc-400 font-mono bg-white/[0.03] rounded-lg p-2 mb-2 whitespace-pre-wrap">{agentsJson.presentation.product_display.card_template}</pre>
+                    <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-1">Image source</p>
+                    <p className="text-xs text-zinc-500 leading-relaxed">{agentsJson.presentation.product_display.image_source}</p>
+                  </div>
+                )}
+                {agentsJson.presentation.response_style && (
+                  <div className="bg-surface rounded-xl border border-white/[0.08] p-4 sm:col-span-2">
+                    <div className="text-sm font-medium text-white mb-2">Response style</div>
+                    <div className="grid sm:grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-1">When results found</p>
+                        <p className="text-zinc-400 leading-relaxed">{agentsJson.presentation.response_style.found_results}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-1">When no results</p>
+                        <p className="text-zinc-400 leading-relaxed">{agentsJson.presentation.response_style.no_results}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {agentsJson.presentation.rules.length > 0 && (
+                  <div className="bg-surface rounded-xl border border-white/[0.08] p-4">
+                    <div className="text-sm font-medium text-white mb-2">Presentation rules</div>
+                    <ul className="text-xs text-zinc-500 space-y-1">
+                      {agentsJson.presentation.rules.map((rule, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <span className="text-brand mt-0.5">-</span>
+                          <span>{rule}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ── Instructions ── */}
           {Object.keys(agentsJson.instructions).length > 0 && (
@@ -286,7 +343,7 @@ export default function ProductResultsPage() {
                 {Object.entries(agentsJson.instructions).map(([key, value]) => {
                   const instruction = value as Record<string, unknown>;
                   return (
-                    <div key={key} className="bg-surface rounded-xl border border-[#444444] p-4 hover:border-brand/20 transition-colors">
+                    <div key={key} className="bg-surface rounded-xl border border-white/[0.08] p-4 hover:border-brand/20 transition-colors">
                       <div className="text-sm font-medium text-white capitalize mb-2">{key.replace(/_/g, " ")}</div>
                       {instruction.how ? <p className="text-xs text-neutral-400 font-mono mb-2">{String(instruction.how)}</p> : null}
                       {instruction.language_note ? <p className="text-xs text-neutral-400 mb-2">{String(instruction.language_note)}</p> : null}
@@ -309,14 +366,14 @@ export default function ProductResultsPage() {
 
           {/* ── Key Pages ── */}
           {agentsJson.pages.key_pages.length > 0 && (
-            <div className="bg-surface rounded-xl border border-[#444444] shadow-lg shadow-black/20 p-6 fade-in stagger-2">
+            <div className="bg-surface rounded-xl border border-white/[0.08] shadow-lg shadow-black/20 p-6 fade-in stagger-2">
               <div className="flex items-center gap-2 mb-4">
                 <Globe className="w-4 h-4 text-brand" />
                 <SectionTitle>Key pages discovered</SectionTitle>
               </div>
               <div className="space-y-2">
                 {agentsJson.pages.key_pages.map((page, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-[#2D2D2D] rounded-lg px-4 py-3 border border-transparent hover:border-brand/10 transition-colors">
+                  <div key={i} className="flex items-start gap-3 bg-[#0e1018] rounded-lg px-4 py-3 border border-transparent hover:border-brand/10 transition-colors">
                     <Globe className="w-3.5 h-3.5 text-neutral-600 mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-mono text-neutral-400 truncate">{page.url}</div>
@@ -329,7 +386,7 @@ export default function ProductResultsPage() {
           )}
 
           {/* ── Download agents.json ── */}
-          <div className="bg-surface rounded-xl border border-[#444444] shadow-lg shadow-black/20 p-6 fade-in stagger-3">
+          <div className="bg-surface rounded-xl border border-white/[0.08] shadow-lg shadow-black/20 p-6 fade-in stagger-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Code2 className="w-4 h-4 text-brand" />
@@ -338,7 +395,7 @@ export default function ProductResultsPage() {
               <Button
                 onClick={handleDownloadAgentsJson}
                 variant="outline"
-                className="h-8 px-3 border-[#505050] text-neutral-400 hover:text-white hover:bg-[#3F3F3F] bg-transparent text-xs"
+                className="h-8 px-3 border-white/[0.1] text-neutral-400 hover:text-white hover:bg-white/[0.06] bg-transparent text-xs"
               >
                 <Download className="w-3.5 h-3.5 mr-1.5" />
                 Download
